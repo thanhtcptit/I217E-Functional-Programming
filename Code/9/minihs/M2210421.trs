@@ -1,0 +1,66 @@
+not true  = false .
+not false = true .
+
+and true true = true .
+and true false = false .
+and false true = false .
+and false false = false .
+
+lt 0 0         = false .
+lt X 0         = false .
+lt 0 (s Y)     = true .
+lt (s X) (s Y) = lt X Y .
+
+gt 0 0         = false .
+gt X 0         = true .
+gt 0 (s Y)     = false .
+gt (s X) (s Y) = gt X Y .
+
+eq X Y = and (not (lt X Y)) (not (gt X Y)) .
+
+filter P []            = [] .
+filter P (cons X XS)   = if_filter P X XS (P X) .
+if_filter P X XS true  = cons X (filter P XS) .
+if_filter P X XS false = filter P XS .
+
+add 0     Y = Y .
+add (s X) Y = s (add X Y) .
+
+bsub X 0 = X .
+bsub 0 X = 0 .
+bsub (s X) (s Y) = bsub X Y .
+
+concat [] [] = [] .
+concat [] (cons Y YS) = cons Y (concat [] YS) .
+concat (cons X XS) YS = cons X (concat XS YS) .
+
+zipWith T [] [] = [] .
+zipWith T (cons X XS) (cons Y YS) = cons (concat X (cons T Y)) ((zipWith T XS YS)) .
+
+mconcat T [] = [] .
+mconcat T (cons X XS) = cons (cons T X) ((mconcat T XS)) .
+
+prefixes [] = [[]] .
+prefixes (cons X XS) = cons [] (mconcat X (prefixes XS)) .
+
+suffixes [] = [[]] .
+suffixes (cons X XS) = cons (cons X XS) ((suffixes XS)) .
+
+interleave T XS = zipWith T (prefixes XS) (suffixes XS) .
+
+minterleave T [] = [] .
+minterleave T (cons X XS) = concat (interleave T X) (minterleave T XS) .
+
+permutations [] = [[]] .
+permutations (cons X XS) = minterleave X (permutations XS) .
+
+ok (cons X1 (cons X2 (cons X3 (cons X4 (cons X5 (cons X6 (cons X7 (cons X8 (cons X9 []))))))))) = 
+    and (and (and (and (and (and (and (eq (add (add X1 X2) X3) 15) (eq (add (add X4 X5) X6) 15)) (eq (add (add X7 X8) X9) 15)) (eq (add (add X1 X4) X7) 15)) (eq (add (add X2 X5) X8) 15)) (eq (add (add X3 X6) X9) 15)) (eq (add (add X1 X5) X9) 15)) (eq (add (add X3 X5) X7) 15).
+
+ms (cons X1 (cons X3 (cons X7 (cons X9 [])))) = 
+    cons X1 (cons (bsub 15 (add X1 X3)) (cons X3 (cons (bsub 15 (add X1 X7)) (cons 5 (cons (bsub 15 (add X3 X9)) (cons X7 (cons (bsub 15 (add X7 X9)) (cons X9 [])))))))) .
+
+genms [] = [] .
+genms (cons X XS) = cons (ms X) ((genms XS)) .
+
+main = filter ok (genms (permutations [2, 4, 6, 8])) .

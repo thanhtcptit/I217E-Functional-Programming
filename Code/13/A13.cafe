@@ -1,0 +1,65 @@
+mod! PNAT {
+  [Nat]
+  op 0 : -> Nat .
+  op s : Nat -> Nat .
+  op _=_ : Nat Nat -> Bool {comm} .
+  op _+_ : Nat Nat -> Nat {assoc comm prec 30 l-assoc} .
+  op _*_ : Nat Nat -> Nat {assoc comm prec 29 l-assoc} .
+  eq (X:Nat    = X:Nat)    = true .
+  eq (0        = s(Y:Nat)) = false .
+  eq (s(X:Nat) = s(Y:Nat)) = (X = Y) .
+  eq 0        + Y:Nat = Y .
+  eq s(X:Nat) + Y:Nat = s(X + Y) .
+  eq 0        * Y:Nat = 0 .
+  eq s(X:Nat) * Y:Nat = X * Y + Y .
+}
+
+mod! SUM {
+  pr(PNAT) .
+  op sum : Nat -> Nat .
+  ops f1 f2 f3 f4 : Nat Nat -> Nat .
+
+  eq sum(N:Nat)          = f1(0, N) .
+  eq f1(X:Nat, s(N:Nat)) = f2(X, s(N)) .
+  eq f1(X:Nat, 0)        = f4(X, 0) .
+  eq f2(X:Nat, N:Nat)    = f3(X + N, N) .
+  eq f3(X:Nat, s(N:Nat)) = f1(X, N) . 
+  eq f4(X:Nat, N:Nat)    = X .
+}
+
+open SUM .
+red sum(s(s(s(0)))) .
+close .
+
+mod! LEMMA {
+  pr(SUM) .
+  op lemma : Nat Nat -> Bool .
+  eq lemma(X:Nat, N:Nat) = (f1(X, N) + f1(X, N) = X + X + N * s(N)) .
+}
+--> Proof.
+--> We perform induction on N.
+--> If N = 0 then the claim is trivial:
+open LEMMA .
+red lemma(X:Nat, 0) .
+close .
+
+--> If N = s(m) then the claim follows from the I.H.:
+open LEMMA .
+op m : -> Nat .
+eq f1(X:Nat, m) + f1(X:Nat, m) = X + X + m * s(m) .
+red lemma(X:Nat, s(m)) .
+close .
+--> QED.
+
+mod! THEOREM {
+  pr(SUM) .
+  -- Lemma:
+  eq f1(X:Nat, N:Nat) + f1(X, N) = X + X + N * s(N) .
+  op theorem : Nat -> Bool .
+  eq theorem(N:Nat) = (sum(N) + sum(N) = N * s(N)) .
+}
+--> Proof.
+--> The theorem is immedidate from the lemma.
+open THEOREM .
+red theorem(N:Nat) .
+close .
